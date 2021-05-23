@@ -73,6 +73,22 @@ int getLog(int src) {
 	return count;
 }
 
+void printCacheConfig(CacheConfig config) {
+	char* replacementPolicy;
+	char* writePolicy;
+	if (config.replacementPolicy == LRU) {
+		replacementPolicy = "LRU";
+	} else if (config.replacementPolicy == FIFO) {
+		replacementPolicy = "FIFO";
+	}
+	if (config.writePolicy == WT) {
+		writePolicy = "WT";
+	} else if (config.writePolicy == WB) {
+		writePolicy = "WB";
+	}
+	printf("%d %d %d %s %s %d\n", config.size, config.numberOfEntries, config.numberOfWay, replacementPolicy, writePolicy, config.cacheHitTime);
+}
+
 Cache* createCache(CacheConfig cacheConfig) {
 	Cache* cache = (Cache *)malloc(sizeof(Cache));
 	cache->config = cacheConfig;
@@ -119,18 +135,66 @@ Cache* createCache(CacheConfig cacheConfig) {
 	return cache;
 }
 
+void loadCacheConfig(int* numberOfLevels, int* memoryAccessTime, CacheConfig* l1CacheConfig, CacheConfig* l2CacheConfig) {
+	int i;
+	char buffer[100];
+	FILE* file = fopen("../CPU/cache.config", "r");
+
+	if(file == NULL){
+    printf("파일열기 실패\n");
+		return;
+  }
+
+	fgets(buffer, sizeof(buffer), file);
+	char* temp = strtok(buffer, " ");
+	*numberOfLevels = atoi(temp);
+	temp = strtok(NULL, " ");
+	*memoryAccessTime = atoi(temp);
+
+	for (i = 0; i < *numberOfLevels; i++) {
+		CacheConfig* c;
+		if (i == 0) {
+			c = l1CacheConfig;
+		} else {
+			c = l2CacheConfig;
+		}
+		fgets(buffer, sizeof(buffer), file);
+		temp = strtok(buffer, " ");
+		c->size = atoi(temp);
+		temp = strtok(NULL, " ");
+		c->numberOfEntries = atoi(temp);
+		temp = strtok(NULL, " ");
+		c->numberOfWay = atoi(temp);
+		temp = strtok(NULL, " ");
+		if (strcmp(temp, "FIFO") == 0) {
+			c->replacementPolicy = FIFO;
+		} else if (strcmp(temp, "LRU") == 0) {
+			c->replacementPolicy = LRU;
+		}
+		temp = strtok(NULL, " ");
+		if (strcmp(temp, "WT") == 0) {
+			c->writePolicy = WT;
+		} else if (strcmp(temp, "WB") == 0) {
+			c->writePolicy = WB;
+		}
+		temp = strtok(NULL, " ");
+		if (i == 0) {
+			c->cacheHitTime = 0;
+		} else {
+			c->cacheHitTime = atoi(temp);
+		}
+	}
+
+}
+
 void createCacheSystem() {
-	// FILE* file = fopen("../CPU/cache.config", "r");
-	// char buffer[100];
-	// fgets(buffer, sizeof(buffer), file);    // hello.txt에서 문자열을 읽음
+	CacheConfig l1CacheConfig, l2CacheConfig;
+	int numberOfLevels, memoryAccessTime;
 
-	// printf("%s\n", buffer);
-	// fclose(file);
+	loadCacheConfig(&numberOfLevels, &memoryAccessTime, &l1CacheConfig, &l2CacheConfig);
 
-	int numberOfLevels = 2;
-	int memoryAccessTime = 400;
-	CacheConfig l1CacheConfig = { 16, 2, 1, LRU, WT, 0 };
-	CacheConfig l2CacheConfig = { 64, 4, 2, FIFO, WB, 10 };
+	printCacheConfig(l1CacheConfig);
+	printCacheConfig(l2CacheConfig);
 
 	Cache* L1DataCache = NULL;
 	Cache* L1InstructionCache = NULL;
@@ -418,24 +482,24 @@ void print_cache_result(int n_cycles) {
 	}
 	float totalHitRate = totalHitCount / totalAccessCount;
 
-	printf("\n");
+	printf("\n\n");
 	printf("Level 1 Cache\n");
 	printf("Hit Count of l1i-cache: %d\n", cacheSystem.L1InstructionCache->result.hitCount);
 	printf("Miss Count of l1i-cache: %d\n", cacheSystem.L1InstructionCache->result.accessCount - cacheSystem.L1InstructionCache->result.hitCount);
-	printf("Hit Ratio of l1i-cache: %f\n", l1iHitRate);
+	printf("Hit Ratio of l1i-cache: %0.3f\n", l1iHitRate);
 	printf("\n");
 	printf("Hit Count of l1d-cache: %d\n", cacheSystem.L1DataCache->result.hitCount);
 	printf("Miss Count of l1d-cache: %d\n", cacheSystem.L1DataCache->result.accessCount - cacheSystem.L1DataCache->result.hitCount);
-	printf("Hit Ratio of l1d-cache: %f\n", l1dHitRate);
+	printf("Hit Ratio of l1d-cache: %0.3f\n", l1dHitRate);
 	printf("\n");
 	printf("Level 2 Cache\n");
 	if (cacheSystem.numberOfLevels == 2) {
 		printf("Hit Count: %d\n", cacheSystem.L1DataCache->nextLevelCache->result.hitCount);
 		printf("Miss Count: %d\n", cacheSystem.L1DataCache->nextLevelCache->result.accessCount - cacheSystem.L1DataCache->nextLevelCache->result.hitCount);
-		printf("Hit Ratio: %f\n", l2HitRate);
+		printf("Hit Ratio: %0.3f\n", l2HitRate);
 	}
 	printf("\n");
-	printf("Total Hit Ratio: %f\n", totalHitRate);
+	printf("Total Hit Ratio: %0.3f\n", totalHitRate);
 
 	//////////////////////////////////////////////////////////////////////
 }
