@@ -193,8 +193,8 @@ void createCacheSystem() {
 
 	loadCacheConfig(&numberOfLevels, &memoryAccessTime, &l1CacheConfig, &l2CacheConfig);
 
-	printCacheConfig(l1CacheConfig);
-	printCacheConfig(l2CacheConfig);
+	// printCacheConfig(l1CacheConfig);
+	// printCacheConfig(l2CacheConfig);
 
 	Cache* L1DataCache = NULL;
 	Cache* L1InstructionCache = NULL;
@@ -266,12 +266,12 @@ int change(Cache* cache, unsigned int addr) {
 		} else {
 			stallCycles += change(cache->nextLevelCache, addr);
 		}
-		printf(" (change WT) ");
+		// printf(" (change WT) ");
 	} else if (cache->config.writePolicy == WB) {
 		for (i = 0; i < cache->config.numberOfWay; i++) {
 			if (cache->entries[index].blocks[i].tag == tag) {
 				cache->entries[index].blocks[i].dirty = true;
-				printf(" (change WB) " );
+				// printf(" (change WB) " );
 			}
 		}
 	}
@@ -299,13 +299,13 @@ int insert(Cache* cache, int index, int tag, unsigned int addr) {
 					leastUsed = waySet.recentlyUsed[i];
 				}
 			}
-			printf(" (replace LRU %dth block) ", blockPlace);
+			// printf(" (replace LRU %dth block) ", blockPlace);
 		} else if (cache->config.replacementPolicy == FIFO) {
 			blockPlace = waySet.firstInIndex;
 			cache->entries[index].firstInIndex = (waySet.firstInIndex == cache->config.numberOfWay)
 				? 0
 				: waySet.firstInIndex + 1;
-			printf(" (replace FIFO %dth block) ", blockPlace);
+			// printf(" (replace FIFO %dth block) ", blockPlace);
 		}
 	}
 
@@ -320,7 +320,7 @@ int insert(Cache* cache, int index, int tag, unsigned int addr) {
 	cache->entries[index].blocks[blockPlace].tag = tag;
 	cache->entries[index].blocks[blockPlace].valid = true;
 	cache->entries[index].blocks[blockPlace].dirty = false;
-	printf(" (insert %x, %x, %d, %d) ", index, tag, blockPlace, instructionCount);
+	// printf(" (insert %x, %x, %d, %d) ", index, tag, blockPlace, instructionCount);
 	return stallCycles;
 }
 
@@ -335,11 +335,11 @@ bool access(Cache* cache, int index, int tag) {
 		if (block.tag == tag) {
 			cache->result.hitCount += 1;
 			cache->entries[index].recentlyUsed[i] = cache->result.accessCount;
-			printf(" (hit!!) ");
+			// printf(" (hit!!) ");
 			return true;
 		}
 	}
-	printf(" (missㅠㅠ) ");
+	// printf(" (missㅠㅠ) ");
 	return false;
 }
 
@@ -384,8 +384,8 @@ int data_load (unsigned int addr) {
 
 	stallCycles += loadDataCache(addr);
 
-	printf("\nLOAD DATA - 0x%x (%d)\n", addr, stallCycles);
-	printCacheSystem();
+	// printf("\nLOAD DATA - 0x%x (%d)\n", addr, stallCycles);
+	// printCacheSystem();
 
 	return stallCycles;
 	// Return value: stall cycles due to L1 cache miss
@@ -404,8 +404,8 @@ int instruction_load (unsigned int addr) {
 
 	stallCycles += loadInstCache(addr);
 
-	printf("\nLOAD INST - 0x%x (%d)\n", addr, stallCycles);
-	printCacheSystem();
+	// printf("\nLOAD INST - 0x%x (%d)\n", addr, stallCycles);
+	// printCacheSystem();
 
 	return stallCycles;
 	// Return value: stall cycles due to L1 cache miss 
@@ -425,8 +425,8 @@ int data_store(unsigned int addr) {
 	stallCycles += loadDataCache(addr);
 	stallCycles += storeDataCache(addr);
 	
-	printf("\nSTORE DATA - 0x%x (%d)\n", addr, stallCycles);
-	printCacheSystem();
+	// printf("\nSTORE DATA - 0x%x (%d)\n", addr, stallCycles);
+	// printCacheSystem();
 
 	return stallCycles;
 	// Return value: stall cycles due to L1 cache miss
@@ -482,7 +482,7 @@ void print_cache_result(int n_cycles) {
 	}
 	float totalHitRate = totalHitCount / totalAccessCount;
 
-	printf("\n\n");
+	printf("\n");
 	printf("Level 1 Cache\n");
 	printf("Hit Count of l1i-cache: %d\n", cacheSystem.L1InstructionCache->result.hitCount);
 	printf("Miss Count of l1i-cache: %d\n", cacheSystem.L1InstructionCache->result.accessCount - cacheSystem.L1InstructionCache->result.hitCount);
