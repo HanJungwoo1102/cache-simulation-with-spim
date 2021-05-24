@@ -376,7 +376,7 @@ int data_load (unsigned int addr) {
 	/* You have to implement your own data_load function here! */
 	int stallCycles = 0;
 	instructionCount += 1;
-	// if (instructionCount < 8) return 0;
+	if (instructionCount < 8) return 0;
 
 	if (!isCacheSystemCreated) {
 		createCacheSystem();
@@ -396,7 +396,7 @@ int instruction_load (unsigned int addr) {
 	/* You have to implement your own instruction_load function here! */
 	int stallCycles = 0;
 	instructionCount += 1;
-	// if (instructionCount < 8) return 0;
+	if (instructionCount < 8) return 0;
 	
 	if (!isCacheSystemCreated) {
 		createCacheSystem();
@@ -416,7 +416,7 @@ int data_store(unsigned int addr) {
 	/* You have to implement your own data_store function here! */
 	int stallCycles = 0;
 	instructionCount += 1;
-	// if (instructionCount < 8) return 0;
+	if (instructionCount < 8) return 0;
 
 	if (!isCacheSystemCreated) {
 		createCacheSystem();
